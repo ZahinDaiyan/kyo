@@ -30,3 +30,32 @@ echo "$(date +"%Y-%m-%d %H:%M:%S") | ADD | $SNAPSHOT_NAME | $SNAPSHOT_PATH" >> "
 echo "✅ Snapshot '$SNAPSHOT_NAME' created successfully."
 echo "📁 Saved to: $SNAPSHOT_PATH"
 
+#!/bin/bash
+
+# Parameters:
+# $1 = snapshot name
+# $2 = snapshot directory path
+# $3 = log file path
+
+commit_name="$1"
+snapshot_dir="$2"
+log_file="$3"
+
+# Validate input
+if [ -z "$commit_name" ]; then
+  echo "❌ Usage: kyo add <commit-name>"
+  exit 1
+fi
+
+# Timestamp for unique naming
+timestamp=$(date +"%d-%B_%H-%M-%S")
+snapshot_name="${commit_name}-${timestamp}"
+target_dir="${snapshot_dir}/${snapshot_name}"
+
+# Create snapshot
+mkdir -p "$target_dir"
+rsync -a --exclude 'snapshots' --exclude '.git' . "$target_dir"
+
+# Log + output
+echo "[$(date)] Added snapshot '$snapshot_name' from $(pwd)" >> "$log_file"
+echo "✅ Snapshot '$snapshot_name' saved at: $target_dir"

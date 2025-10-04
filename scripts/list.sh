@@ -1,17 +1,13 @@
 #!/bin/bash
-# === kyo/scripts/list.sh ===
 
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SNAPSHOT_DIR="$BASE_DIR/snapshots"
+# Parameters:
+# $1 = snapshot directory path
+# $2 = log file path
 
-if [ ! -d "$SNAPSHOT_DIR" ]; then
-    echo "No snapshots found."
-    exit 0
-fi
+snapshot_dir="$1"
+log_file="$2"
 
-echo "📜 Available snapshots:"
-echo "-----------------------"
-ls -1 "$SNAPSHOT_DIR" | sort
-echo "-----------------------"
-echo "Total: $(ls -1 "$SNAPSHOT_DIR" | wc -l)"
+echo "📦 Available snapshots:"
+ls -1 "$snapshot_dir" | sort
 
+echo "[$(date)] Listed snapshots" >> "$log_file"
