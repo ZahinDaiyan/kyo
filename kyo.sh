@@ -1,34 +1,58 @@
 #!/bin/bash
-# ============================
-# Kyo Installer
-# ============================
 
-# Central location
-KYO_DIR="$HOME/kyo"
+# ===============================
+#  Kyo - Simple Version Control
+# ===============================
 
-# Move folder if needed
-if [ ! -d "$KYO_DIR" ]; then
-    echo "Creating $KYO_DIR..."
-    mkdir -p "$KYO_DIR"
-    echo "Please make sure the 'kyo' folder is copied or cloned to $HOME before running this script."
-    exit 0
+# 1 Detect OS
+OS_TYPE="$(uname -s)"
+
+case "$OS_TYPE" in
+    Linux*)   
+        OS="Linux"
+        ;;
+    Darwin*)  
+        OS="macOS"
+        ;;
+    CYGWIN*|MINGW*|MSYS*)
+        OS="Windows"
+        ;;
+    *)
+        OS="Unknown"
+        ;;
+esac
+
+# 2 Warn Windows users
+if [ "$OS" = "Windows" ]; then
+    echo "❌ WARNING: Windows detected. Kyo requires WSL, Git Bash with rsync, or Cygwin to work."
+    echo "Please use Linux/macOS or set up WSL/Git Bash before running Kyo."
+    exit 1
 fi
 
-# Make scripts executable
-chmod +x "$KYO_DIR/kyo.sh"
-chmod +x "$KYO_DIR/scripts/"*.sh
+# 3 Base directories
+BASE_DIR="$HOME/kyo"
+SCRIPTS_DIR="$BASE_DIR/scripts"
+SNAPSHOT_DIR="$BASE_DIR/snapshots"
+LOG_FILE="$BASE_DIR/kyo.log"
 
-# Create global command
-if [ ! -f /usr/local/bin/kyo ]; then
-    sudo ln -s "$KYO_DIR/kyo.sh" /usr/local/bin/kyo
-fi
+# 4 Ensure directories exist
+mkdir -p "$SCRIPTS_DIR" "$SNAPSHOT_DIR"
+touch "$LOG_FILE"
 
-# Ensure snapshots and log exist
-mkdir -p "$KYO_DIR/snapshots"
-touch "$KYO_DIR/kyo.log"
-
-# Done
-echo "✅ Kyo installed successfully!"
-echo "Try: kyo add test-snapshot"
-echo "Snapshots will be stored in: $KYO_DIR/snapshots"
-echo "Logs are stored in: $KYO_DIR/kyo.log"
+# 5 Command routing
+case "$1" in
+  add)
+    shift
+    "$SCRIPTS_DIR/add.sh" "$@" "$SNAPSHOT_DIR" "$LOG_FILE"
+    ;;
+  list)
+    "$SCRIPTS_DIR/list.sh" "$SNAPSHOT_DIR" "$LOG_FILE"
+    ;;
+  restore)
+    shift
+    "$SCRIPTS_DIR/restore.sh" "$@" "$SNAPSHOT_DIR" "$LOG_FILE"
+    ;;
+  *)
+    echo "Usage: kyo {add <name> | list | restore <snapshot-name>}"
+    ;;
+esac
