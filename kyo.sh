@@ -1,31 +1,34 @@
 #!/bin/bash
+# ============================
+# Kyo Installer
+# ============================
 
-# ===============================
-#  Kyo - Simple Version Control
-# ===============================
+# Central location
+KYO_DIR="$HOME/kyo"
 
-BASE_DIR="$HOME/kyo"
-SCRIPTS_DIR="$BASE_DIR/scripts"
-SNAPSHOT_DIR="$BASE_DIR/snapshots"
-LOG_FILE="$BASE_DIR/kyo.log"
+# Move folder if needed
+if [ ! -d "$KYO_DIR" ]; then
+    echo "Creating $KYO_DIR..."
+    mkdir -p "$KYO_DIR"
+    echo "Please make sure the 'kyo' folder is copied or cloned to $HOME before running this script."
+    exit 0
+fi
 
-# Ensure directories exist
-mkdir -p "$SCRIPTS_DIR" "$SNAPSHOT_DIR"
-touch "$LOG_FILE"
+# Make scripts executable
+chmod +x "$KYO_DIR/kyo.sh"
+chmod +x "$KYO_DIR/scripts/"*.sh
 
-case "$1" in
-  add)
-    shift
-    "$SCRIPTS_DIR/add.sh" "$@" "$SNAPSHOT_DIR" "$LOG_FILE"
-    ;;
-  list)
-    "$SCRIPTS_DIR/list.sh" "$SNAPSHOT_DIR" "$LOG_FILE"
-    ;;
-  restore)
-    shift
-    "$SCRIPTS_DIR/restore.sh" "$@" "$SNAPSHOT_DIR" "$LOG_FILE"
-    ;;
-  *)
-    echo "Usage: kyo {add <name> | list | restore <snapshot-name>}"
-    ;;
-esac
+# Create global command
+if [ ! -f /usr/local/bin/kyo ]; then
+    sudo ln -s "$KYO_DIR/kyo.sh" /usr/local/bin/kyo
+fi
+
+# Ensure snapshots and log exist
+mkdir -p "$KYO_DIR/snapshots"
+touch "$KYO_DIR/kyo.log"
+
+# Done
+echo "✅ Kyo installed successfully!"
+echo "Try: kyo add test-snapshot"
+echo "Snapshots will be stored in: $KYO_DIR/snapshots"
+echo "Logs are stored in: $KYO_DIR/kyo.log"
